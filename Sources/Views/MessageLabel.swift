@@ -23,8 +23,9 @@
  */
 
 import UIKit
+import LinkLabel
 
-open class MessageLabel: UILabel {
+open class MessageLabel: LinkLabel, LinkLabelInteractionDelegate {
 
     // MARK: - Private Properties
 
@@ -210,6 +211,7 @@ open class MessageLabel: UILabel {
         }
         attributesNeedUpdate = false
         isConfiguring = false
+        interactionDelegate = self
         setNeedsDisplay()
     }
 
@@ -335,32 +337,8 @@ open class MessageLabel: UILabel {
     // MARK: - Parsing Text
 
     private func parse(text: NSAttributedString) -> [NSTextCheckingResult] {
-        guard enabledDetectors.isEmpty == false else { return [] }
         let range = NSRange(location: 0, length: text.length)
-        var matches = [NSTextCheckingResult]()
-
-        // Get matches of all .custom DetectorType and add it to matches array
-        let regexs = enabledDetectors
-            .filter { $0.isCustom }
-            .map { parseForMatches(with: $0, in: text, for: range) }
-            .joined()
-        matches.append(contentsOf: regexs)
-
-        // Get all Checking Types of detectors, except for .custom because they contain their own regex
-        let detectorCheckingTypes = enabledDetectors
-            .filter { !$0.isCustom }
-            .reduce(0) { $0 | $1.textCheckingType.rawValue }
-        if detectorCheckingTypes > 0, let detector = try? NSDataDetector(types: detectorCheckingTypes) {
-            let detectorMatches = detector.matches(in: text.string, options: [], range: range)
-            matches.append(contentsOf: detectorMatches)
-        }
-
-        guard enabledDetectors.contains(.url) else {
-            return matches
-        }
-
-        // Enumerate NSAttributedString NSLinks and append ranges
-        var results: [NSTextCheckingResult] = matches
+        var results: [NSTextCheckingResult] = []
 
         text.enumerateAttribute(NSAttributedString.Key.link, in: range, options: []) { value, range, _ in
             guard let url = value as? URL else { return }
@@ -513,6 +491,10 @@ open class MessageLabel: UILabel {
     
     private func handleDate(_ date: Date) {
         delegate?.didSelectDate(date)
+    }
+    
+    public func linkLabelDidSelectLink(linkLabel: LinkLabel, url: URL) {
+        handleURL(url)
     }
     
     private func handleURL(_ url: URL) {

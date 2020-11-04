@@ -17,5 +17,6 @@ Pod::Spec.new do |s|
    s.ios.resource_bundle = { 'MessageKit' => 'Sources/Assets.xcassets' }
 
    s.dependency 'InputBarAccessoryView', '~> 5.2.1'
+   s.dependency 'LinkLabel'
 
 end

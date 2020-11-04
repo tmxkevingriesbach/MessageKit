@@ -23,6 +23,7 @@
  */
 
 import UIKit
+import LinkLabel
 
 /// A subclass of `MessageContentCell` used to display text messages.
 open class TextMessageCell: MessageContentCell {
@@ -91,6 +92,11 @@ open class TextMessageCell: MessageContentCell {
                 break
             }
         }
+    }
+    
+    open override func handleTapGesture(_ gesture: UIGestureRecognizer) {
+        messageLabel.respondToLinkLabelTapped(gesture)
+        super.handleTapGesture(gesture)
     }
     
     /// Used to handle the cell's contentView's tap gesture.
